@@ -3,7 +3,6 @@ Maya Scanner Tools Remove Two Node vaccine_gene / breed_gene
 
 """
 
-
 import maya.cmds as cmds
 import pymel.core as pm
 import os
@@ -27,11 +26,16 @@ class Maya_Scanner(object):
         logfile_path = os.path.join (TempDir, 'reference_path.json').replace ('\\', '/')
         with open (logfile_path, 'w') as fd:
             json.dump (src, fd, indent=4)
-            
+
     # ==========================================================================================
     def get_file_for_dir(self, dir_path = None):
-        pass
-    
+        self._dir = dir_path
+
+        all_files = list()
+        for root, dirs, files in os.walk(self._dir, topdown=False):
+            all_files.extend([os.path.join(root, f) for f in files])
+        
+        print(all_files)
 
     # ==========================================================================================
     def openfile(self):
@@ -62,4 +66,6 @@ class Maya_Scanner(object):
                 except:
                     pass
 
-
+path = r'V:\demo\Tusk'
+SC = Maya_Scanner()
+SC.get_file_for_dir(dir_path = path)
