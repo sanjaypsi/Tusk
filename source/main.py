@@ -70,16 +70,17 @@ class Maya_Scanner(object):
                     get_src_path = os.path.dirname(sn_name).split(':/')[1]
                     filename = os.path.basename(sn_name)
 
-                    dst_path = os.path.join(save_path, get_src_path)
-                    if not os.path.exists(dst_path):
-                        os.makedirs(dst_path)
-
                     for v in virus:
                         cmds.select (v)
                         selected = cmds.ls (sl=True)
                         if selected:
                             cmds.delete (selected)
                             print("delete >>> ", selected)
+
+
+                    dst_path = os.path.join(save_path, get_src_path)
+                    if not os.path.exists(dst_path):
+                        os.makedirs(dst_path)
 
                     filePathExport = os.path.join(dst_path, filename)
                     cmds.file(rename=filePathExport)
