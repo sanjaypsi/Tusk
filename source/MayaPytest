@@ -1,0 +1,22 @@
+import sys
+
+class MyOutput:
+    def __init__(self, stream):
+        self.stream = stream
+
+    def write(self, data):
+        self.stream.write(data)
+
+    def flush(self):
+        self.stream.flush()
+
+    def isatty(self):
+        return False
+
+sys.stdout = MyOutput(sys.stdout)
+pytest.main(["-x", "V:/Source/demoA/test_create_sphere.py", "-vv"])
+
+
+pytest_args = ["--verbose", "--color=yes", "V:/Source/demoA/test_create_sphere.py"]
+pytest.main(pytest_args)
+
