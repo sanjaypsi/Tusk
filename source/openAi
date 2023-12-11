@@ -1,0 +1,10 @@
+        # Interact with OpenAI using the content of the file
+        response = openai.Completion.create(
+            engine      ="text-davinci-003",
+            prompt      ='write the function using Python Pytest from \
+                        Given file Path in Python Code Add all require Maya Modules :\n' + file_content,
+                        
+            max_tokens  =1024,
+            temperature =0.7,
+            n           =1,
+        )
