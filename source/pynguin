@@ -1,0 +1,3 @@
+set PYNGUIN_DANGER_AWARE=1
+
+pynguin --project-path D:/PSI/Source/demoA/unittest --output-path D:/PSI/Source/demoA/unittest --module-name baseSkeleton -v --seed 1629381673714481067
