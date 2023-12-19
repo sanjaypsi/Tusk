@@ -1,0 +1,6 @@
+# Your prompt text
+prompt_text = file_content
+# Estimate token count based on prompt length
+approximate_token_count = len(prompt_text.split()) * 2  # Approximation based on average token length
+print(f"Estimated token count for the prompt: {approximate_token_count}")
+
