@@ -33,3 +33,411 @@ for chunk in text_chunks:
 
 # Print or use the combined responses
 print("".join(chat_log))
+ghghghghg
+#####################
+
+# -*- coding: utf-8 -*- 
+# eST v3 Unit Baseskeleton Script
+# Creation Date: 08 Aug. 2010
+
+"""
+Version History:
+	v1.00 : 08 Aug 2010 sano
+		- [new] made by human 1.0.
+		- [new] customOption 'numSpine' and 'numNeck' was added.
+		        now the number of spines and necks are changable.
+	v1.10 : 26 Mar 2013 sano
+		- [new] add 'Custom' item to the 'hand' custom option.
+		- [new] add 'nFinger', 'nFingerSeg', 'useEachNFingerSeg' and 'nFingerSegStr' custom options.
+	v1.20 : 02 Sep 2013 togashi
+		- [mod] change maximum number of 'numSpine' custom option from 255 to 127.
+		- [new] add 'hasScapulaRoot' custom option.
+	v1.30 : 03 Mar 2014 togashi
+		- add 'hasArch' option.
+	v2.00 : 20 May 2017 togashi
+		- implemented for eST3.
+		- remove 'hasScapulaRoot' option. 
+	v3.00 : 17 Jan 2022 togashi
+		- [new] add 'useArmFlex' option.
+		- [new] add 'useLegFlex' option.
+	v3.10 : 10 Feb 2022 sano
+		- [new] add 'useUpArmPSC' option.
+		- [new] add 'useFootPSC' option.
+	v3.20 : 17 Apr 2022 togashi
+		- [mod] 'useFlex' custom option is changed to enum type and it holds the flex type.
+		- [mod] fix enum custom option lebels.
+"""
+import eST3 as eST
+
+lib = eST.Unit.loadLibrary( 'lib_biped' )
+libConstruction = eST.Unit.loadLibrary( 'lib_construction' )
+_msg = lib._msg
+
+class UserBaseSkeletonCallback( eST.BaseSkeletonCallback ):
+	"""
+	Basic human.
+	"""
+	def _customOptionUi_nSegStr_fng( *args, **kwargs ):
+		kwargs['maxNumFingers'] = 15
+		return lib.customOptionUi_nSegStr_fng( *args, **kwargs )
+	_customOptionUi_nSegStr_fng_get = lib.customOptionUi_nSegStr_fng_get
+	_customOptionUi_nSegStr_fng_set = lib.customOptionUi_nSegStr_fng_set
+	
+	def _customOptionUi_nSegStr_toe( *args, **kwargs ):
+		kwargs['maxNumFingers'] = 15
+		return lib.customOptionUi_nSegStr_toe( *args, **kwargs )
+	_customOptionUi_nSegStr_toe_get = lib.customOptionUi_nSegStr_toe_get
+	_customOptionUi_nSegStr_toe_set = lib.customOptionUi_nSegStr_toe_set
+	
+	#### Override #########################################
+	_version_         = 3.1
+	_svnId_           = '$Id: baseSkeleton.py 1579 2022-04-18 21:27:41Z togashi $'
+	_brief_           = _msg.D.biped_brief
+	_brief_alt_       = _msg.A.biped_brief
+	
+	def _baseSkeletonFlags_( self ):
+		return self.kBaseSkeletonFlag.CompoundUnit
+	
+	def _uiName_( self ):
+		return _msg.T.biped
+	
+	def _customOptionData_( self ):
+		handLabels         = [ _msg( x, asList=1 )  for x in lib.kBipedHandTypeList ]
+		shoulderAxisLabels = [ _msg( 'axis_'+x, asList=1 )  for x in lib.kShoulderAxisList ]
+		footLabels         = [ _msg( x, asList=1 )  for x in lib.kBipedFootTypeList ]
+		footAxisLabels     = [ _msg( 'axis_'+x, asList=1 )  for x in lib.kFootAxisList ]
+		thumbLabels        = [ _msg( 'fng_'+x, asList=1 )  for x in lib.kThumbList ]
+		flexTypeLabels     = [_msg('ft_'+x, asList=True)  for x in lib.kFlexTypeList]
+		
+		return [
+			dict( name='spineFrame', type='frame', default=0, uiName=_msg.spine),
+				dict( name='numSpine', type='short', default=3, min=0, max=127, uiName=_msg.numSpine),
+				dict( name='numNeck', type='short', default=1, min=0, max=127, uiName=_msg.numNeck),
+				dict( name='spineFrameEnd', type='frameEnd', default=1 ),
+			
+			dict( name='armFrame', type='frame', default=0, uiName=_msg.arm
+				),
+				# arm unit options.
+				dict( name='shoulderAxis', type='enum', default=0, list=lib.kShoulderAxisList, uiName=_msg.axis_ % 'Shoulder', uiList=shoulderAxisLabels
+					,store=0
+					),
+				dict( name='useUpArmPSC', type='bool', default=False, uiName=_msg.usePSC
+					,hidden=1
+					),
+				dict( name='usePSCCmt', type='comment', default=_msg.cmt_usePSC, group='useUpArmPSC',
+					hidden=1
+					),
+				
+				dict( name='hand', type='enum', default=1, list=lib.kBipedHandTypeList, uiName=_msg.hand, uiList=handLabels
+					),
+				
+				# customHand options.
+				dict( name='nFingerSegStr', type='string', default='3 3 3 3 3', uiName=_msg.nFingerSegStr
+					,customUi = '_customOptionUi_nSegStr_fng'
+					,group='hand:3'
+					),
+				dict( name='thumb', type='enum',  default=1, list=lib.kThumbList, uiName=_msg.thumb, uiList=thumbLabels
+					,group='hand:3'
+					),
+				
+				dict( name='inHandBones', type='bool', default=True, uiName=_msg.inHandBones
+					,group='hand:2:3'
+					),
+				
+				# arm unit options (2).
+				dict( name='useArmFlex', type='enum', default=0, list=lib.kFlexTypeList, uiName=_msg.useFlex, uiList=flexTypeLabels
+					),
+				
+				dict( name='armFrameEnd', type='frameEnd', default=1 ),
+			
+			dict( name='legFrame', type='frame', default=0, uiName=_msg.leg
+				),
+				dict( name='foot', type='enum', default=2, list=lib.kBipedFootTypeList, uiName=_msg.foot, uiList=footLabels ),
+				
+				# ankle unit options.
+				dict( name='ankleAxis2', type='enum', default=0, list=lib.kFootAxisList, uiName=_msg.axis_ % 'Ankle', uiList=footAxisLabels
+					,store=0, group='foot:1'
+					),
+				
+				# foot unit options.
+				dict( name='ankleAxis', type='enum', default=0, list=footAxisLabels, uiName=_msg.axis_ % 'Ankle'
+					,store=0, group='foot:2'
+					),
+				dict( name='otherAxis', type='enum', default=0, list=footAxisLabels, uiName=_msg.otherAxis
+					,store=0, group='foot:2'
+					),
+				dict( name='hasArch', type='bool', default=True, uiName=_msg.hasArch
+					,group='foot:2'
+					),
+				dict( name='useFootPSC', type='bool', default=False, uiName=_msg.usePSC
+					,hidden=1
+					,group='foot:2'
+					),
+				dict( name='usePSCCmt', type='comment', default=_msg.cmt_usePSC
+					,group='useFootPSC', hidden=1
+					),
+				
+				# customFoot unit options.
+				dict( name='nToeSegStr', type='string', default='3 3 3 3 3', uiName=_msg.nToeSegStr
+					,customUi = '_customOptionUi_nSegStr_toe'
+					,group='foot:4'
+					),
+				
+				dict( name='inFootBones', type='bool', default=True, uiName=_msg.inFootBones
+					,group='foot:3:4'
+					),
+				
+				# leg unit options.
+				dict( name='useLegFlex', type='enum', default=0, list=lib.kFlexTypeList, uiName=_msg.useFlex, uiList=flexTypeLabels
+					),
+				
+				dict( name='legFrameEnd', type='frameEnd', default=1 ),
+			]
+	
+	def _constructionName_( self ):
+		"""Returns constructionName.
+		"""
+		#! useFlex
+		#! usePSC
+		_version = 1
+		self.__construction = lib.construction( self.options, _version )
+		#print( lib.destruction( *self.__construction ) )
+		return self.__construction[0]
+	
+	def _childUnitOptions_( self ):
+		L, R = eST.values.identifiers['left'], eST.values.identifiers['right']
+		nSpine   = self.options['numSpine']
+		nNeck    = self.options['numNeck']
+		handType = lib.kBipedHandTypeList[ self.options['hand'] ]
+		footType = lib.kBipedFootTypeList[ self.options['foot'] ]
+		
+		identifier = self.identifier
+		
+		if nSpine:
+			lastSpine = ':spine:BASE_spine%s' % eST.numToAlp( nSpine-1 )
+			if nSpine == 3:
+				lastSpineLength = 2.0
+			elif nSpine == 2:
+				lastSpineLength = 2.0
+			elif nSpine == 1:
+				lastSpineLength = 2.6
+			else:
+				lastSpineLength = ( 4.6 / ( nSpine+1 ) ) * 1.7391304347826086956521739130435
+		else:
+			lastSpine = ':spine:BASE_hip'
+			lastSpineLength = 4.6
+		
+		armParent = lastSpine
+		neckLength = 0.5
+		
+		# spine
+		if nNeck:
+			rets = [
+				dict(
+					unit     = 'bipedSpine',
+					position = dict( position=( 0.0, ( footType=='noFoot' and 10.0 ) or 11.0, 0.0 ) ),
+					options  = dict(
+						numSpine = self.options['numSpine'],
+						numNeck  = self.options['numNeck'],
+						),
+					sideLabel = 'center',
+					animPlugsOptions = dict( order=2 ),
+					)
+				]
+		else:
+			rets = [
+				dict(
+					unit     = 'spine',
+					position = dict( position=( 0.0, ( footType=='noFoot' and 10.0 ) or 11.0, 0.0 ) ),
+					options  = dict(
+						 numSpine = self.options['numSpine'],
+						),
+					sideLabel = 'center',
+					animPlugsOptions = dict( order=2 ),
+					)
+				]
+		
+		# head
+		if nNeck:
+			last = ':neck:BASE_neck%s' % eST.numToAlp( nNeck-1 )
+			lastLength = neckLength/nNeck
+		else:
+			last = lastSpine
+			lastLength = lastSpineLength
+		
+		rets.extend( [
+			 dict(
+				unit      = 'head',
+				parent    = last,
+				position  = dict( position=( 0.0, lastLength, 0.0 ) ),
+				sideLabel = 'center',
+				options   = dict(),
+				animPlugsOptions = dict( order=1 ),
+				primaryChild = True,
+				)
+			] )
+		
+		# arm[LR]
+		if handType == 'noHand':
+			armUnit = 'arm'
+			armOptions = dict(
+				useUpArmPSC = self.options['useUpArmPSC'],
+				useFlex = self.options['useArmFlex'],
+				)
+		else:
+			armUnit = 'bipedArm'
+			v = self.options['hand'] - 1 
+			armOptions = dict(
+				shoulderAxis = self.options['shoulderAxis'],
+				useUpArmPSC  = self.options['useUpArmPSC'],
+				useFlex      = self.options['useArmFlex'],
+				hand         = v
+				)
+			if handType == 'fiveFingers':
+				armOptions.update( dict(
+					inHandBones       = self.options['inHandBones'],
+					) )
+			if handType == 'custom':
+				nSegStr = self.options['nFingerSegStr']
+				nFingers, nSegments = lib._parseFingerList( nSegStr )
+				if nFingers < lib.kMinNumFingers or nFingers > lib.kMaxNumFingers:
+					self._err( _msg.M.err_numFng )
+				if min( nSegments ) < lib.kMinNumFingerSegments or max( nSegments ) > lib.kMaxNumFingerSegments:
+					self._err( _msg.M.err_numSeg )
+				
+				armOptions.update( dict(
+					nFingerSegStr     = nSegStr,
+					thumb             = self.options['thumb'],
+					inHandBones       = self.options['inHandBones'],
+					) )
+		h  = lastSpineLength * 0.75
+		pL = ( 0.25, h, 0.2 )
+		pR = ( -0.25, h, 0.2 )
+		
+		rets.extend( [
+			dict(
+				unit       = armUnit,
+				identifier = L,
+				parent     = armParent,
+				position   = dict( position=pL ),
+				sideLabel  = 'left',
+				options    = armOptions,
+				),
+			dict(
+				unit       = armUnit,
+				identifier = R,
+				parent     = armParent,
+				position   = dict( position=pR ),
+				mirrorX    = True,
+				mirrorPA   = True,
+				sideLabel  = 'right',
+				options    = armOptions,
+				),
+			] )
+		
+		# leg[LR]
+		if footType == 'noFoot':
+			legUnit = 'leg'
+			legOptions = dict(
+				useFlex = self.options['useLegFlex'],
+				)
+		else:
+			legUnit = 'bipedLeg'
+			legOptions = dict(
+				foot    = self.options['foot']-1,
+				useFlex = self.options['useLegFlex'],
+				)
+			if footType == 'noToe':
+				legOptions.update( dict(
+					ankleAxis      = self.options['ankleAxis2'],
+					) )
+			elif footType == 'singleToe':
+				legOptions.update( dict(
+					hasArch        = self.options['hasArch'],
+					ankleAxis      = self.options['ankleAxis'],
+					otherAxis      = self.options['otherAxis'],
+					useFootPSC     = self.options['useFootPSC'],
+					) )
+			elif footType == 'fiveToes':
+				legOptions.update( dict(
+					inFootBones    = self.options['inFootBones'],
+					) )
+			elif footType == 'custom':
+				nSegStr = self.options['nToeSegStr']
+				nFingers, nSegments = lib._parseFingerList( nSegStr )
+				if nFingers < lib.kMinNumFingers or nFingers > lib.kMaxNumFingers:
+					self._err( _msg.M.err_numToe )
+				if min( nSegments ) < lib.kMinNumFingerSegments or max( nSegments ) > lib.kMaxNumFingerSegments:
+					self._err( _msg.M.err_numSeg )
+				
+				legOptions.update( dict(
+					nToeSegStr     = nSegStr,
+					inFootBones    = self.options['inFootBones'],
+					) )
+		
+		rets.extend( [
+			dict(
+				unit       = legUnit,
+				identifier = L,
+				parent     = ':spine:BASE_hip',
+				position   = dict( position=( 1.0, 0.0, 0.0 ) ),
+				sideLabel  = 'left',
+				options    = legOptions,
+				),
+			dict(
+				unit       = legUnit,
+				identifier = R,
+				parent     = ':spine:BASE_hip',
+				position   = dict( position=( -1.0, 0.0, 0.0 ) ),
+				mirrorX    = True,
+				mirrorPA   = True,
+				sideLabel  = 'right',
+				options    = legOptions,
+				),
+			] )
+		
+		return rets
+	
+	def _afterCreate_( self ):
+		"""
+		"""
+		# Hide spineEnd.
+		if self.options['numNeck'] == 0:
+			spineEnd = self._getComponent( 'BASE_spineEnd', 'spine' )
+			head     = self._getComponent( 'BASE_head', 'head' )
+			spineEnd.radius.set( head.radius.get() )
+			spineEnd.conceal()
+			spineEnd.reorder( tail=1 )
+		# save construction data.
+		if self.__construction:
+			try:
+				s = ' '.join( [
+					self.__construction[0] ]
+					+ [ str( self.__construction[1] ) ]
+					+ [ str( x )  for x in self.__construction[2] ]
+					)
+				if s:
+					plug = self.unitNode.custom_constructionData
+					if plug.exists():
+						plug.set( lock=0 )
+					else:
+						plug.add( dt='string', hidden=1 )
+					plug.set( s, lock=1 )
+			except:
+				eST.warning( 'Error while store the construction data.', self.unitNode )
+	
+	def _enterDesignMode_( self ):
+		"""Connect headA.t to spineEnd.t.
+		"""
+		if self.options['numNeck'] == 0:
+			spineEnd = self._getComponent( 'BASE_spineEnd', 'spine' )
+			head     = self._getComponent( 'BASE_head', 'head' )
+			head.t.connectTo( spineEnd.t )
+	
+	def _afterExitDesignMode_( self ):
+		"""Disconnect headA.t to spineEnd.t.
+		"""
+		if self.options['numNeck'] == 0:
+			spineEnd = self._getComponent( 'BASE_spineEnd', 'spine' )
+			head     = self._getComponent( 'BASE_head', 'head' )
+			head.t.disconnectTo( spineEnd.t )
