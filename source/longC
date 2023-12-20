@@ -1,0 +1,35 @@
+import openai
+import os
+
+# from chatgptmax import send
+
+# Define a function to read the content of a file
+def read_file_content(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return file.read()
+
+# Read the content of the file
+file_path = r"D:\NEW_STORE\FromCosmos\Sanjay\Sanjay\OLD\Python\pipeline\Script_MC\Assest_Link.py"
+file_content = read_file_content(file_path)
+
+# Set up your OpenAI API key
+openai.api_key = ""
+
+prompt_text = "Please create unit test using UnitTest for the python code below:\n" + file_content
+
+# Split the text into chunks if needed
+text_chunks = [prompt_text[i:i+8192] for i in range(0, len(prompt_text), 8192)]  # Split into chunks of 4000 characters
+
+chat_log = []
+
+for chunk in text_chunks:
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",  # Replace with your preferred model
+        messages=[{"role": "system", "content": chunk}],
+        temperature=0.7,
+        max_tokens=2500  # Adjust max tokens as needed
+    )
+    chat_log.append(response['choices'][0]['message']['content'])
+
+# Print or use the combined responses
+print("".join(chat_log))
