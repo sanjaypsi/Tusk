@@ -1,6 +1,45 @@
-# Your prompt text
-prompt_text = file_content
-# Estimate token count based on prompt length
-approximate_token_count = len(prompt_text.split()) * 2  # Approximation based on average token length
-print(f"Estimated token count for the prompt: {approximate_token_count}")
+import os
+import openai
 
+
+
+
+_fileDir = r'D:\PSI\Source\generateUnittest\unittestMain.py'
+role = 'Please create unit test using pytest for the python code below: '
+
+with open(_fileDir, 'r') as file:
+    file_content = file.read()
+
+# prompt  ='Please create unit test using pytest for the python code below:\n' + file_content,
+# openai.api_key = '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'
+
+
+# messages = ["Write the function using Python unittest."]
+
+# response = openai.ChatCompletion.create(
+#             model       ="gpt-3.5-turbo",
+#             messages    =messages,
+#             max_tokens  =50,
+#             n           =1,
+#             stop        =None,
+#             temperature =0.7,
+# )
+
+# joke = response.choices[0].text.strip()
+# print(joke)
+
+# get all the *.py files in the directory and subdirectory recursively
+_fileDir = r'D:\PSI\Source\generateUnittest'
+file_list = []
+for root, dirs, files in os.walk(_fileDir):
+    for file in files:
+        if file.endswith(".py"):
+            file_list.append(os.path.join(root, file))
+            
+print(file_list)
+
+# # Your prompt text
+# prompt_text = file_content
+# # Estimate token count based on prompt length
+# approximate_token_count = len(prompt_text.split()) * 2  # Approximation based on average token length
+# print(f"Estimated token count for the prompt: {approximate_token_count}")
